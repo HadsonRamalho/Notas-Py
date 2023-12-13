@@ -5,9 +5,11 @@ class BlocoDeNotas:
     def __init__(self, root):
         self.root = root
         self.root.title("Bloco de Notas")
+        self.tema_atual = "branco"  # Defina o tema padrão
         self.criar_interface()
         self.arquivo_atual = None
         self.alterado = False
+        self.aplicar_tema()
 
     def criar_interface(self):
         self.texto_box = tk.Text(self.root, wrap="word", undo=True, width=80, height=20)
@@ -19,6 +21,7 @@ class BlocoDeNotas:
 
         self.criar_menu_arquivo()
         self.criar_menu_edicao()
+        self.criar_menu_tema()
 
     def criar_menu_arquivo(self):
         menu_arquivo = tk.Menu(self.barra_menu, tearoff=0)
@@ -51,12 +54,22 @@ class BlocoDeNotas:
         self.root.bind_all("<Control-x>", lambda event: self.recortar())
         self.root.bind_all("<Control-v>", lambda event: self.colar())
 
+    def criar_menu_tema(self):
+        menu_tema = tk.Menu(self.barra_menu, tearoff=0)
+        self.barra_menu.add_cascade(label="Tema", menu=menu_tema)
+        menu_tema.add_command(label="Branco", command=lambda: self.mudar_tema("branco"))
+        menu_tema.add_command(label="Modo Escuro", command=lambda: self.mudar_tema("escuro"))
+        menu_tema.add_command(label="Verde Turquesa", command=lambda: self.mudar_tema("verde"))
+        menu_tema.add_separator()
+        menu_tema.add_command(label="Configurar Tema", command=self.configurar_tema)
+
     def novo_arquivo(self):
         if self.verificar_mudancas_nao_salvas():
             self.texto_box.delete("1.0", "end")
             self.arquivo_atual = None
             self.alterado = False
             self.root.title("Bloco de Notas")
+            self.aplicar_tema()
 
     def abrir_arquivo(self):
         if self.verificar_mudancas_nao_salvas():
@@ -70,6 +83,7 @@ class BlocoDeNotas:
                         self.arquivo_atual = arquivo
                         self.alterado = False
                         self.root.title(f"Bloco de Notas - {self.arquivo_atual}")
+                        self.aplicar_tema()
                 except Exception as e:
                     messagebox.showerror("Erro ao abrir arquivo", str(e))
 
@@ -96,6 +110,7 @@ class BlocoDeNotas:
                     self.arquivo_atual = arquivo
                     self.alterado = False
                     self.root.title(f"Bloco de Notas - {self.arquivo_atual}")
+                    self.aplicar_tema()
             except Exception as e:
                 messagebox.showerror("Erro ao salvar arquivo", str(e))
 
@@ -128,6 +143,31 @@ class BlocoDeNotas:
 
     def colar(self):
         self.texto_box.insert(tk.INSERT, self.texto_box.clipboard_get())
+
+    def mudar_tema(self, tema):
+        self.tema_atual = tema
+        self.aplicar_tema()
+
+    def aplicar_tema(self):
+        if self.tema_atual == "branco":
+            cor_fundo = "white"
+            cor_texto = "black"
+        elif self.tema_atual == "escuro":
+            cor_fundo = "#1e1e1e"
+            cor_texto = "white"
+        elif self.tema_atual == "verde":
+            cor_fundo = "#008080"
+            cor_texto = "white"
+        else:
+            cor_fundo = "white"
+            cor_texto = "black"
+
+        self.texto_box.config(bg=cor_fundo, fg=cor_texto)
+
+    def configurar_tema(self):
+        novo_tema = simpledialog.askstring("Configurar Tema", "Digite o nome do novo tema:")
+        if novo_tema:
+            self.mudar_tema(novo_tema)
 
 if __name__ == "__main__":
     root = tk.Tk()
